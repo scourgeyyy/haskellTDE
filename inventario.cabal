@@ -1,0 +1,14 @@
+cabal-version:      2.4
+name:               inventario
+version:            1.0.0
+synopsis:           Sistema de Gerenciamento de Inventario - RA2
+author:             Pedro Gulin, Rayssa Grafetti, Victor Willian
+maintainer:         Pedro-Gulin
+build-type:         Simple
+
+executable inventario
+  main-is:          Main.hs
+  build-depends:    base >=4.14 && <5,
+                    time >=1.9 && <1.15,
+                    containers >=0.6 && <0.8
+  default-language: Haskell2010

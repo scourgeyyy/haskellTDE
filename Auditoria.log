@@ -1,0 +1,5 @@
+LogEntry {timestamp = 2025-06-01 10:00:00 UTC, acao = Add, detalhes = "id=001; nome=Teclado Mecanico; qtd=25; cat=Perifericos", status = Sucesso}
+LogEntry {timestamp = 2025-06-01 10:01:00 UTC, acao = Add, detalhes = "id=002; nome=Mouse Gamer; qtd=40; cat=Perifericos", status = Sucesso}
+LogEntry {timestamp = 2025-06-01 10:02:00 UTC, acao = Remove, detalhes = "id=001; removido=5; restante=20", status = Sucesso}
+LogEntry {timestamp = 2025-06-01 10:03:00 UTC, acao = Update, detalhes = "id=002; nova_qtd=35", status = Sucesso}
+LogEntry {timestamp = 2026-06-14 21:50:40.272309569 UTC, acao = Add, detalhes = "id=022; nome=caralho; qtd=33; cat=oiii", status = Sucesso}
