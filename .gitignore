@@ -1,8 +1,0 @@
-dist-newstyle/
-dist/
-*.hi
-*.o
-*.exe
-.stack-work/
-.hie/
-*.log.bak
