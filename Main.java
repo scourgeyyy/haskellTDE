@@ -327,50 +327,50 @@ public class Main {
         return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    static void construirRedeOnibus(String arquivo, int k) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(arquivo), "UTF-8"));
+    static void construirRedeOnibus(String arqParadas, String arqViagens, String arqHorarios) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(arqParadas), "UTF-8"));
         br.readLine();
         ArrayList<String> nomes = new ArrayList<>();
         ArrayList<double[]> pos = new ArrayList<>();
+        HashMap<String, Integer> indice = new HashMap<>();
         String linha;
         while ((linha = br.readLine()) != null) {
             if (linha.trim().isEmpty()) continue;
             ArrayList<String> c = campos(linha);
+            indice.put(c.get(0), nomes.size());
             nomes.add(c.get(0) + " - " + c.get(2).replace('"', '\''));
             pos.add(new double[]{Double.parseDouble(c.get(4)), Double.parseDouble(c.get(5))});
         }
         br.close();
-        iniciar(nomes.size(), false);
+        iniciar(nomes.size(), true);
         for (int i = 0; i < n; i++) rotulos[i] = nomes.get(i);
-        HashSet<Long> usadas = new HashSet<>();
-        for (int i = 0; i < n; i++) {
-            int[] viz = new int[k];
-            double[] dv = new double[k];
-            Arrays.fill(dv, Double.MAX_VALUE);
-            for (int j = 0; j < n; j++) {
-                if (i == j) continue;
-                double dx = pos.get(i)[0] - pos.get(j)[0];
-                double dy = pos.get(i)[1] - pos.get(j)[1];
-                double d = dx * dx + dy * dy;
-                if (d >= dv[k - 1]) continue;
-                int p = k - 1;
-                while (p > 0 && dv[p - 1] > d) {
-                    dv[p] = dv[p - 1];
-                    viz[p] = viz[p - 1];
-                    p--;
-                }
-                dv[p] = d;
-                viz[p] = j;
-            }
-            for (int t = 0; t < k; t++) {
-                int j = viz[t];
-                int u = Math.min(i, j);
-                int v = Math.max(i, j);
-                if (!usadas.add((long) u * n + v)) continue;
-                double m = distancia(pos.get(u)[0], pos.get(u)[1], pos.get(v)[0], pos.get(v)[1]);
-                addAresta(u, v, Math.round(m * 10) / 10.0);
-            }
+        HashMap<String, String> viagens = new HashMap<>();
+        br = new BufferedReader(new InputStreamReader(new FileInputStream(arqViagens), "UTF-8"));
+        br.readLine();
+        while ((linha = br.readLine()) != null) {
+            if (linha.trim().isEmpty()) continue;
+            ArrayList<String> c = campos(linha);
+            viagens.put(c.get(2), c.get(0) + "|" + c.get(1));
         }
+        br.close();
+        HashSet<String> usadas = new HashSet<>();
+        br = new BufferedReader(new InputStreamReader(new FileInputStream(arqHorarios), "UTF-8"));
+        br.readLine();
+        String viagemAnt = "";
+        int paradaAnt = -1;
+        while ((linha = br.readLine()) != null) {
+            if (linha.trim().isEmpty()) continue;
+            ArrayList<String> c = campos(linha);
+            if (!viagens.containsKey(c.get(0)) || !indice.containsKey(c.get(3))) continue;
+            int atual = indice.get(c.get(3));
+            if (c.get(0).equals(viagemAnt) && paradaAnt != atual && usadas.add(paradaAnt + "|" + atual + "|" + viagens.get(c.get(0)))) {
+                double m = distancia(pos.get(paradaAnt)[0], pos.get(paradaAnt)[1], pos.get(atual)[0], pos.get(atual)[1]);
+                addAresta(paradaAnt, atual, Math.round(m * 10) / 10.0);
+            }
+            viagemAnt = c.get(0);
+            paradaAnt = atual;
+        }
+        br.close();
     }
 
     static void mostrarRanking(double[] valores, String arquivo) throws IOException {
@@ -390,7 +390,7 @@ public class Main {
         while (true) {
             System.out.println();
             System.out.println("Grafo atual: " + n + " nos, " + arestas.size() + " arestas, " + (dirigido ? "direcionado" : "nao direcionado"));
-            System.out.println("1 Construir rede de onibus (stops.txt)");
+            System.out.println("1 Construir rede de onibus (stops, trips e stop_times)");
             System.out.println("2 Carregar grafo de arquivo Pajek");
             System.out.println("3 Salvar grafo em arquivo Pajek");
             System.out.println("4 Gerar grafo aleatorio");
@@ -407,7 +407,7 @@ public class Main {
             try {
                 if (op.equals("0")) break;
                 else if (op.equals("1")) {
-                    construirRedeOnibus("stops.txt", 8);
+                    construirRedeOnibus("stops.txt", "trips.txt", "stop_times.txt");
                     System.out.println("Rede criada.");
                 } else if (op.equals("2")) {
                     System.out.print("Arquivo: ");
