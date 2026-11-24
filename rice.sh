@@ -5,8 +5,9 @@ set -euo pipefail
 
 echo ">> Instalando pacotes..."
 sudo apt update
-sudo apt install -y xorg lightdm i3 polybar alacritty fastfetch feh picom rofi \
-  maim xclip pulseaudio-utils pavucontrol unzip curl fonts-font-awesome
+sudo apt install -y xorg xserver-xorg xauth i3 polybar alacritty fastfetch feh picom rofi \
+  maim xclip pulseaudio-utils pavucontrol unzip curl git python3 fonts-font-awesome \
+  build-essential libpam0g-dev libxcb-xkb-dev brightnessctl
 
 echo ">> Instalando fonte Victor Mono (itálico cursivo do print)..."
 mkdir -p ~/.local/share/fonts/VictorMono /tmp/victor
@@ -305,8 +306,53 @@ PS1='\n\[\e[90m\]~\n\[\e[30m\]› \[\e[0m\]'
 EOF
 fi
 
+# ---------------- LY (tela de login no terminal) ----------------
+echo ">> Instalando o Ly..."
+LY_DIR=/tmp/ly-build
+rm -rf "$LY_DIR" && mkdir -p "$LY_DIR"
+git clone https://codeberg.org/fairyglade/ly "$LY_DIR/ly"
+cd "$LY_DIR/ly"
+# usa a última versão estável (tag), não o código em desenvolvimento
+LY_TAG=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+git checkout -q "$LY_TAG"
+echo "   Ly $LY_TAG"
+
+# descobre qual Zig o Ly pede e baixa a versão estável mais nova dessa série
+ZIG_MIN=$(grep -oP 'minimum_zig_version\s*=\s*"\K[0-9.]+' build.zig.zon || true)
+if [ -z "$ZIG_MIN" ]; then
+  echo "!! Não consegui descobrir a versão do Zig. O LightDM continua como tela de login."
+  exit 1
+fi
+ZIG_SERIES=$(echo "$ZIG_MIN" | cut -d. -f1,2)
+curl -fsSL https://ziglang.org/download/index.json -o "$LY_DIR/zig-index.json"
+ZIG_URL=$(python3 -I - "$LY_DIR/zig-index.json" "$ZIG_SERIES" <<'PYEOF'
+import json, sys
+data = json.load(open(sys.argv[1])); series = sys.argv[2]
+vers = [v for v in data if v.startswith(series + ".") and "x86_64-linux" in data[v]]
+vers.sort(key=lambda v: [int(x) for x in v.split(".")])
+print(data[vers[-1]]["x86_64-linux"]["tarball"])
+PYEOF
+)
+echo "   Zig: $ZIG_URL"
+curl -fL "$ZIG_URL" -o "$LY_DIR/zig.tar.xz"
+mkdir -p "$LY_DIR/zig" && tar -xf "$LY_DIR/zig.tar.xz" -C "$LY_DIR/zig" --strip-components=1
+
+sudo "$LY_DIR/zig/zig" build installexe -Dinit_system=systemd
+cd ~
+
+# só troca a tela de login depois que o Ly compilou com sucesso
+for dm in lightdm gdm3 sddm; do
+  sudo systemctl disable "$dm.service" 2>/dev/null || true
+done
+sudo systemctl disable getty@tty2.service || true
+if systemctl list-unit-files | grep -q '^ly@\.service'; then
+  sudo systemctl enable ly@tty2.service
+else
+  sudo systemctl enable ly.service
+fi
+
 echo
 echo ">> Pronto!"
 echo "   1) Copie seu wallpaper para ~/.config/i3/wallpaper.jpg"
-echo "   2) Reinicie (sudo reboot) e escolha 'i3' na tela de login"
+echo "   2) Reinicie (sudo reboot) e escolha 'i3' na tela do Ly (setas laterais)"
 echo "   3) Alt+Enter abre o terminal, Alt+D abre o menu"
