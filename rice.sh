@@ -80,8 +80,8 @@ bindsym $mod+Shift+5 move container to workspace number 5
 
 floating_modifier $mod
 
-# Teclado ABNT2
-exec --no-startup-id setxkbmap br
+# Teclado US
+exec --no-startup-id setxkbmap us
 EOF
 
 # ---------------- PICOM (cantos arredondados/sombra leve) ----------------
