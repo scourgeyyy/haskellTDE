@@ -18,11 +18,11 @@ else
   echo "!! Não consegui baixar a fonte. Baixe em https://rubjo.github.io/victor-mono e coloque os .ttf em ~/.local/share/fonts"
 fi
 
-mkdir -p ~/.config/{i3,polybar,alacritty,fastfetch,picom}
+mkdir -p ~/.config/{i3,polybar,alacritty,fastfetch,picom,rofi}
 
 # ---------------- I3 ----------------
 cat > ~/.config/i3/config <<'EOF'
-set $mod Mod4
+set $mod Mod1
 set $term alacritty
 
 font pango:Victor Mono Italic 10
@@ -37,10 +37,10 @@ default_border pixel 2
 default_floating_border pixel 2
 gaps inner 12
 gaps outer 6
-gaps top 40
+gaps top 48
 
 #                       borda    fundo    texto    indicador borda-filho
-client.focused          #5c1a26  #5c1a26  #ffffff  #5c1a26   #5c1a26
+client.focused          #d4a0a8  #d4a0a8  #ffffff  #d4a0a8   #d4a0a8
 client.focused_inactive #b8b8b8  #ffffff  #555555  #b8b8b8   #b8b8b8
 client.unfocused        #d0d0d0  #ffffff  #888888  #d0d0d0   #d0d0d0
 
@@ -104,11 +104,11 @@ active = #333333
 border = #c8c8c8
 
 [bar/main]
-width = 100%:-20
-offset-x = 10
-offset-y = 8
+width = 100%:-40
+offset-x = 20
+offset-y = 12
 height = 26
-radius = 4
+radius = 0
 background = ${colors.bg}
 foreground = ${colors.fg}
 border-size = 1
@@ -120,7 +120,7 @@ font-0 = "Victor Mono:style=Italic:size=9;2"
 modules-left = i3
 modules-center = date
 modules-right = cpu memory network volume
-override-redirect = false
+override-redirect = true
 wm-restack = i3
 
 [module/i3]
@@ -223,6 +223,55 @@ cyan = "#5fa0a0"
 white = "#e0e0e0"
 EOF
 
+# ---------------- ROFI (menu drun, mesmo estilo do terminal) ----------------
+cat > ~/.config/rofi/config.rasi <<'EOF'
+configuration {
+  modi: "drun,run";
+  show-icons: false;
+  display-drun: "›";
+  display-run: "›";
+  drun-display-format: "{name}";
+  font: "Victor Mono Italic 11";
+}
+
+* {
+  bg: #ffffff;
+  fg: #5a5a5a;
+  dim: #9a9a9a;
+  accent: #d4a0a8;
+  sel: #f6eaec;
+  background-color: transparent;
+  text-color: @fg;
+}
+
+window {
+  width: 600px;
+  background-color: @bg;
+  border: 2px;
+  border-color: @accent;
+  border-radius: 0;
+  padding: 18px;
+}
+
+mainbox { children: [ inputbar, listview ]; spacing: 12px; }
+inputbar { children: [ prompt, entry ]; spacing: 8px; }
+prompt { text-color: @fg; }
+entry { placeholder: ""; cursor: text; }
+
+listview {
+  lines: 8;
+  columns: 1;
+  fixed-height: false;
+  scrollbar: false;
+  spacing: 2px;
+}
+
+element { padding: 4px 6px; }
+element normal.normal, element alternate.normal { background-color: transparent; text-color: @dim; }
+element selected.normal { background-color: @sel; text-color: @fg; }
+element-text { background-color: inherit; text-color: inherit; }
+EOF
+
 # ---------------- FASTFETCH ----------------
 cat > ~/.config/fastfetch/config.jsonc <<'EOF'
 {
@@ -260,4 +309,4 @@ echo
 echo ">> Pronto!"
 echo "   1) Copie seu wallpaper para ~/.config/i3/wallpaper.jpg"
 echo "   2) Reinicie (sudo reboot) e escolha 'i3' na tela de login"
-echo "   3) Super+Enter abre o terminal"
+echo "   3) Alt+Enter abre o terminal, Alt+D abre o menu"
