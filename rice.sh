@@ -357,8 +357,9 @@ cd ~
 for dm in lightdm gdm3 sddm; do
   sudo systemctl disable "$dm.service" 2>/dev/null || true
 done
+sudo systemctl daemon-reload
 sudo systemctl disable getty@tty2.service || true
-if systemctl list-unit-files | grep -q '^ly@\.service'; then
+if [ -f /etc/systemd/system/ly@.service ] || [ -f /usr/lib/systemd/system/ly@.service ] || systemctl list-unit-files 'ly@*' | grep -q 'ly@'; then
   sudo systemctl enable ly@tty2.service
 else
   sudo systemctl enable ly.service
