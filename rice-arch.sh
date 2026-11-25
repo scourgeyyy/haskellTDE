@@ -39,7 +39,7 @@ exec_always [ -f ~/.config/sway/wallpaper.jpg ] && swaymsg output '*' bg ~/.conf
 # Monitor: FreeSync e 144 Hz
 # Veja o nome e os modos com: swaymsg -t get_outputs
 output * adaptive_sync on
-# output DP-1 mode 1920x1080@143.981Hz
+output DP-2 mode 1920x1080@143.981Hz
 
 # Teclado US e mouse sem aceleração (1:1)
 input type:keyboard {
