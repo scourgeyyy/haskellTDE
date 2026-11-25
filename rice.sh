@@ -334,20 +334,8 @@ print(data[vers[-1]]["x86_64-linux"]["tarball"])
 PYEOF
 )
 echo "   Zig: $ZIG_URL"
-# o servidor oficial costuma ser lento: tenta os mirrors da comunidade primeiro
-ZIG_FILE=$(basename "$ZIG_URL")
-ZIG_OK=0
-for m in $(curl -fsSL https://ziglang.org/download/community-mirrors.txt 2>/dev/null | shuf) ; do
-  echo "   tentando mirror: $m"
-  if curl -fL --connect-timeout 10 --speed-limit 200000 --speed-time 15 \
-       "$m/$ZIG_FILE" -o "$LY_DIR/zig.tar.xz"; then
-    ZIG_OK=1; break
-  fi
-done
-if [ "$ZIG_OK" = 0 ]; then
-  echo "   mirrors falharam, usando o servidor oficial (pode demorar)..."
-  curl -fL "$ZIG_URL" -o "$LY_DIR/zig.tar.xz"
-fi
+# baixa só do servidor oficial do Zig
+curl -fL "$ZIG_URL" -o "$LY_DIR/zig.tar.xz"
 mkdir -p "$LY_DIR/zig" && tar -xf "$LY_DIR/zig.tar.xz" -C "$LY_DIR/zig" --strip-components=1
 
 sudo "$LY_DIR/zig/zig" build installexe -Dinit_system=systemd
